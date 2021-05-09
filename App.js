@@ -9,6 +9,7 @@ import {
 	TextInput,
 	TouchableOpacity,
 	View,
+	ScrollView,
 } from "react-native";
 import Task from "./components/tasks";
 
@@ -30,18 +31,21 @@ export default function App() {
 	return (
 		<View style={styles.container}>
 			{/* Today's Tasks */}
+
 			<View style={styles.textWrapper}>
 				<Text style={styles.sectionTitle}>Today's Tasks!</Text>
 				{/* Tasks */}
 				<View style={styles.items}>
-					{/* iterate over tasks */}
-					{taskItems.map((item, index) => {
-						return (
-							<TouchableOpacity key={index} onPress={() => completed(index)}>
-								<Task text={item} />
-							</TouchableOpacity>
-						);
-					})}
+					<ScrollView>
+						{/* iterate over tasks */}
+						{taskItems.map((item, index) => {
+							return (
+								<TouchableOpacity key={index} onPress={() => completed(index)}>
+									<Task text={item} />
+								</TouchableOpacity>
+							);
+						})}
+					</ScrollView>
 				</View>
 			</View>
 
