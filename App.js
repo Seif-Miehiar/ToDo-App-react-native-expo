@@ -1,5 +1,6 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
 	Keyboard,
 	KeyboardAvoidingView,
@@ -16,16 +17,80 @@ import Task from "./components/tasks";
 export default function App() {
 	const [task, setTask] = useState("");
 	const [taskItems, setTaskItems] = useState([]);
+	const [data, setData] = useState([]);
 
-	const handleAddTask = () => {
-		Keyboard.dismiss();
-		setTaskItems([...taskItems, task]);
-		setTask(null);
+	// useEffect(() => {
+	// 	async function fetch() {
+	// 		let newData = await getData();
+	// 		// console.log("test newData ", JSON.parse(newData));
+	// 		// Object.values(JSON.parse(newData));
+	// 		// setData(newData);
+	// 	}
+	// 	fetch();
+	// 	// 	console.log("newData", newData);
+	// 	// 	newData = Object.values(newData);
+	// 	// 	setData(newData);
+	// }, [taskItems]);
+
+	const handleAddTask = async () => {
+		try {
+			Keyboard.dismiss();
+			setTaskItems([...taskItems, task], () => {
+				storeData(Object.assign({}, taskItems));
+				setData(Object.values(getData()));
+			});
+			// .then(() => {
+			// console.log("testing stored task items ", Object.assign({}, taskItems));
+			// });
+			// if (taskItems) {
+
+			// }
+			// setData(getData());
+			setTask(null);
+		} catch (err) {
+			console.log(err);
+		}
+		// await storeData(Object.assign({}, taskItems));
+		// setData(Object.values(await getData()));
 	};
+	const storeData = async (value) => {
+		try {
+			console.log("value from argument", value);
+
+			// const obj = Object.assign({}, value);
+			const obj1 = JSON.stringify(value);
+			console.log("obj1 stringified", obj1);
+			await AsyncStorage.setItem("todos2", obj1, (err) => {
+				if (err) {
+					console.log("err in setItem callback");
+					throw err;
+				}
+				console.log("success");
+			});
+		} catch (err) {
+			// saving error
+			if (err) console.log("error from catch is: " + err);
+		}
+		// console.log(setData(Object.values(getData())));
+	};
+
+	const getData = async () => {
+		try {
+			const jsonValue = await AsyncStorage.getItem("todos2");
+			console.log("jsonValue", JSON.parse(jsonValue));
+			return jsonValue != null ? JSON.parse(jsonValue) : null;
+		} catch (err) {
+			// error reading value
+			if (err) console.log(err);
+		}
+	};
+
 	const completed = (index) => {
 		let itemsCopy = [...taskItems];
 		itemsCopy.splice(index, 1);
-		setTaskItems(itemsCopy);
+		setTaskItems(itemsCopy, () => {
+			console.log("todo item deleted successfully");
+		});
 	};
 
 	return (
@@ -38,13 +103,23 @@ export default function App() {
 				<View style={styles.items}>
 					<ScrollView>
 						{/* iterate over tasks */}
-						{taskItems.map((item, index) => {
-							return (
-								<TouchableOpacity key={index} onPress={() => completed(index)}>
-									<Task text={item} />
-								</TouchableOpacity>
-							);
-						})}
+						{
+							(console.log("data before map and render", data),
+							data.length ? (
+								data.map((item, index) => {
+									return (
+										<TouchableOpacity
+											key={index}
+											onPress={() => completed(index)}
+										>
+											<Task text={item} />
+										</TouchableOpacity>
+									);
+								})
+							) : (
+								<Text> No todos yet!</Text>
+							))
+						}
 					</ScrollView>
 				</View>
 			</View>
@@ -58,7 +133,9 @@ export default function App() {
 					style={styles.input}
 					placeholder="write a task"
 					value={task}
-					onChangeText={(text) => setTask(text)}
+					onChangeText={(text) => {
+						setTask(text);
+					}}
 				/>
 
 				<TouchableOpacity onPress={() => handleAddTask()}>
