@@ -1,6 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import React, { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import DropdownAlert from "react-native-dropdownalert";
 import {
 	Keyboard,
 	KeyboardAvoidingView,
@@ -18,46 +19,102 @@ export default function App() {
 	const [task, setTask] = useState("");
 	const [taskItems, setTaskItems] = useState([]);
 	const [data, setData] = useState([]);
+	// const [retrieveData, setRetrieveData] = useState([]);
 
-	// useEffect(() => {
-	// 	async function fetch() {
-	// 		let newData = await getData();
-	// 		// console.log("test newData ", JSON.parse(newData));
-	// 		// Object.values(JSON.parse(newData));
-	// 		// setData(newData);
-	// 	}
-	// 	fetch();
-	// 	// 	console.log("newData", newData);
-	// 	// 	newData = Object.values(newData);
-	// 	// 	setData(newData);
-	// }, [taskItems]);
+	const saveData = async () => {
+		if (task !== null && task !== "") {
+			let userTask = {
+				task,
+				key: Math.floor(Math.random() * 10) + 1,
+			};
+
+			if (task.length === 0) {
+				this.dropDownAlertRef.alertWithType("error", "Error", "Invalid task.");
+			} else {
+				const arrData = [userTask];
+				const storedData = await AsyncStorage.getItem("user");
+				const storedDataParsed = JSON.parse(storedData);
+				setData(storedDataParsed);
+
+				let newData = [];
+
+				if (storedData === null) {
+					// save
+					await AsyncStorage.setItem("user", JSON.stringify(arrData));
+				} else {
+					newData = [userTask, ...storedDataParsed];
+					await AsyncStorage.setItem("user", JSON.stringify(newData));
+				}
+
+				Keyboard.dismiss();
+				setTask("");
+				// this.dropDownAlertRef.alertWithType(
+				// 	"success",
+				// 	"Success",
+				// 	"Task saved successfully."
+				// );
+			}
+		} else {
+			setTimeout(() => {
+				// this.dropDownAlertRef.alertWithType(
+				// 	"error",
+				// 	"Error",
+				// 	"Please fill the field"
+				// );
+			}, 1000);
+		}
+	};
+
+	const retrieveData = async () => {
+		try {
+			const valueString = await AsyncStorage.getItem("user");
+			const value = JSON.parse(valueString);
+			setData(value);
+		} catch (error) {
+			console.log(error);
+		}
+	};
+	useEffect(() => {
+		// setRetrieveData(getData());
+		// AsyncStorage.clear();
+		retrieveData();
+	});
 
 	const handleAddTask = async () => {
 		try {
 			Keyboard.dismiss();
-			setTaskItems([...taskItems, task], () => {
-				storeData(Object.assign({}, taskItems));
-				setData(Object.values(getData()));
-			});
-			// .then(() => {
-			// console.log("testing stored task items ", Object.assign({}, taskItems));
-			// });
-			// if (taskItems) {
-
-			// }
-			// setData(getData());
-			setTask(null);
+			setTaskItems([...taskItems, task]);
+			// await saveData();
 		} catch (err) {
 			console.log(err);
 		}
-		// await storeData(Object.assign({}, taskItems));
-		// setData(Object.values(await getData()));
 	};
+
+	// const saveData = async () => {
+	// 	const todosObj = taskItems;
+
+	// 	const storedData = await AsyncStorage.getItem("todos");
+	// 	const storedDataParsed = JSON.parse(storedData);
+	// 	console.log("storedDataParsed", storedDataParsed);
+
+	// 	let newData = [];
+	// 	if (storedData === null) {
+	// 		// save
+	// 		await AsyncStorage.setItem("todos", JSON.stringify(todosObj));
+	// 		console.log(await AsyncStorage.getItem("todos", JSON.parse(todosObj)));
+	// 		AsyncStorage.clear();
+	// 	} else {
+	// 		newData = [...storedDataParsed, ...todosObj];
+	// 		await AsyncStorage.setItem("todos", JSON.stringify(newData));
+	// 	}
+	// 	setData(newData);
+	// 	Keyboard.dismiss();
+	// };
+
 	const storeData = async (value) => {
 		try {
 			console.log("value from argument", value);
 
-			// const obj = Object.assign({}, value);
 			const obj1 = JSON.stringify(value);
 			console.log("obj1 stringified", obj1);
 			await AsyncStorage.setItem("todos2", obj1, (err) => {
@@ -71,26 +128,44 @@ export default function App() {
 			// saving error
 			if (err) console.log("error from catch is: " + err);
 		}
-		// console.log(setData(Object.values(getData())));
 	};
 
 	const getData = async () => {
 		try {
-			const jsonValue = await AsyncStorage.getItem("todos2");
+			const jsonValue = await AsyncStorage.getItem("todos");
 			console.log("jsonValue", JSON.parse(jsonValue));
-			return jsonValue != null ? JSON.parse(jsonValue) : null;
+			// return jsonValue != null ? JSON.parse(jsonValue) : null;
+			setRetrieveData(JSON.parse(jsonValue));
 		} catch (err) {
 			// error reading value
 			if (err) console.log(err);
 		}
 	};
 
-	const completed = (index) => {
-		let itemsCopy = [...taskItems];
-		itemsCopy.splice(index, 1);
-		setTaskItems(itemsCopy, () => {
-			console.log("todo item deleted successfully");
-		});
+	const completed = async (index) => {
+		let itemsCopy = [...data];
+		const deletedItem = delete itemsCopy[0]["key"] === index;
+		console.log("BEFORE", itemsCopy);
+		if (itemsCopy[0]["key"] === index) {
+			delete itemsCopy[0];
+		}
+		delete itemsCopy[0]["key"] === index;
+		console.log("AFTER", itemsCopy);
+		setTaskItems(itemsCopy);
+		setData(itemsCopy);
+		await AsyncStorage.setItem("key", JSON.stringify(itemsCopy));
+
+		// removeValue(deletedItem);
+	};
+	const removeValue = async (deletedItem) => {
+		try {
+			await AsyncStorage.removeItem("todos", deletedItem);
+		} catch (err) {
+			// remove error
+			if (err) console.log(err);
+		}
+
+		console.log("Done.");
 	};
 
 	return (
@@ -103,23 +178,20 @@ export default function App() {
 				<View style={styles.items}>
 					<ScrollView>
 						{/* iterate over tasks */}
-						{
-							(console.log("data before map and render", data),
-							data.length ? (
-								data.map((item, index) => {
-									return (
-										<TouchableOpacity
-											key={index}
-											onPress={() => completed(index)}
-										>
-											<Task text={item} />
-										</TouchableOpacity>
-									);
-								})
-							) : (
-								<Text> No todos yet!</Text>
-							))
-						}
+						{data === null ? (
+							<Text> No todos yet!</Text>
+						) : (
+							data.map((value, key) => {
+								return (
+									<TouchableOpacity
+										key={key}
+										onPress={() => completed(value.task)}
+									>
+										<Task text={value.task} />
+									</TouchableOpacity>
+								);
+							})
+						)}
 					</ScrollView>
 				</View>
 			</View>
@@ -138,13 +210,15 @@ export default function App() {
 					}}
 				/>
 
-				<TouchableOpacity onPress={() => handleAddTask()}>
+				<TouchableOpacity onPress={() => saveData()}>
+					{/* () => handleAddTask() */}
 					<View style={styles.addWrapper}>
 						<Text style={styles.addText}>+</Text>
 					</View>
 				</TouchableOpacity>
 			</KeyboardAvoidingView>
-			<StatusBar style="auto" />
+			{/* <DropdownAlert ref={(ref) => (this.dropDownAlertRef = ref)} /> */}
+			{/* <StatusBar style="auto" /> */}
 		</View>
 	);
 }

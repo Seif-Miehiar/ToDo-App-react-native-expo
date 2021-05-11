@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0f238dd9-e589-44e6-8db4-56e1ee9598f2" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/app.json" beforeDir="false" afterPath="$PROJECT_DIR$/app.json" afterDir="false" />
-    </list>
+    <list default="true" id="0f238dd9-e589-44e6-8db4-56e1ee9598f2" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -37,9 +35,9 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
-    <state x="229" y="134" width="1200" height="800" key="AVDManager" timestamp="1620653333706">
+    <state x="229" y="134" width="1200" height="800" key="AVDManager" timestamp="1620736128204">
       <screen x="0" y="34" width="1920" height="1046" />
     </state>
-    <state x="229" y="134" width="1200" height="800" key="AVDManager/0.34.1920.1046/1920.0.1920.1080@0.34.1920.1046" timestamp="1620653333706" />
+    <state x="229" y="134" width="1200" height="800" key="AVDManager/0.34.1920.1046/1920.0.1920.1080@0.34.1920.1046" timestamp="1620736128204" />
   </component>
 </project>
