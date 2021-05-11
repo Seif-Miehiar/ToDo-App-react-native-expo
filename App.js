@@ -69,6 +69,7 @@ export default function App() {
 		try {
 			const valueString = await AsyncStorage.getItem("user");
 			const value = JSON.parse(valueString);
+			console.log("get value from func retrieve", value);
 			setData(value);
 		} catch (error) {
 			console.log(error);
@@ -142,18 +143,25 @@ export default function App() {
 		}
 	};
 
-	const completed = async (index) => {
+	const completed = async (keyValue) => {
 		let itemsCopy = [...data];
-		const deletedItem = delete itemsCopy[0]["key"] === index;
+		// const deletedItem = delete itemsCopy[0]["key"] === index;
 		console.log("BEFORE", itemsCopy);
-		if (itemsCopy[0]["key"] === index) {
-			delete itemsCopy[0];
-		}
-		delete itemsCopy[0]["key"] === index;
+		itemsCopy.map((element, index) => {
+			console.log("element", element, "keyValue", keyValue);
+			if (element["key"] === keyValue) {
+				itemsCopy.splice(index, 1);
+				setTaskItems(itemsCopy);
+				setData(itemsCopy);
+				AsyncStorage.setItem("user", JSON.stringify(itemsCopy));
+			}
+		});
+		// await AsyncStorage.setItem("key", JSON.stringify(itemsCopy));
+		// if (itemsCopy[0]["key"] === index) {
+		// 	delete itemsCopy[0];
+		// }
+		// delete itemsCopy[0]["key"] === index;
 		console.log("AFTER", itemsCopy);
-		setTaskItems(itemsCopy);
-		setData(itemsCopy);
-		await AsyncStorage.setItem("key", JSON.stringify(itemsCopy));
 
 		// removeValue(deletedItem);
 	};
@@ -185,7 +193,7 @@ export default function App() {
 								return (
 									<TouchableOpacity
 										key={key}
-										onPress={() => completed(value.task)}
+										onPress={() => completed(value.key)}
 									>
 										<Task text={value.task} />
 									</TouchableOpacity>
